@@ -1,0 +1,60 @@
+// .devcontainer/devcontainer.json
+{
+    "name": "Ubuntu 22.04 Dev",
+    // 选择你的镜像（二选一，已存在的开发镜像 或 本地 Dockerfile 构建）
+    // 方式1：使用 已有开发环境镜像
+    "image": "tekintian/ubuntu:22.04-dev",
+    // 方式2：使用本地 Dockerfile 构建镜像
+    // "build": {
+    //     "dockerfile": "./Dockerfile",
+    //     "context": "."
+    // },
+    "containerEnv": {
+        // "HOME": "/root", // 容器内 HOME 目录，保持与宿主机一致
+        "PATH": "/usr/local/miniconda3/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+    },
+    // 容器启动后的配置（可选）
+    "settings": {
+        // 默认终端
+        "terminal.integrated.defaultProfile.linux": "bash",
+        // 字符编码
+        "files.encoding": "utf8",
+        // 时区（解决容器内时区问题）
+        "terminal.integrated.env.linux": {
+            "TZ": "Asia/Shanghai"
+        },
+        // 禁用 VS Code 的「权限警告」（可选，避免弹窗打扰）
+        "security.workspace.trust.untrustedFiles": "open"
+    },
+
+    // 容器首次创建时执行一次（可选，如安装额外工具）
+    "postCreateCommand": "conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/main && conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/r && conda info --envs | grep -q '^dev$' || conda create -n dev python=3.10 -y && echo 'conda activate dev' >> /root/.bashrc",
+
+    // 挂载本地目录到容器（默认已挂载项目根目录到 /workspaces/项目名）
+    "mounts": [
+        // 可选：挂载宿主机的 ~/.ssh 到容器，方便git操作
+        "source=${localEnv:HOME}/.ssh,target=/root/.ssh,type=bind,consistency=cached",
+        // 可选：挂载宿主机的 ~/.gitconfig 到容器
+        "source=${localEnv:HOME}/.gitconfig,target=/root/.gitconfig,type=bind,consistency=cached"
+    ],
+
+    // 权限配置（避免容器内操作权限问题）
+    "remoteUser": "root",
+    "features": {
+        // 可选：自动安装 Docker 功能（如需在容器内使用docker）
+        // "docker-in-docker": "latest",
+        // 可选：安装 git
+        // "git": "latest",
+        // 可选：安装 Node.js
+        // "node": "20"
+    },
+
+    // 端口转发（如需对外暴露端口，如8080）
+    "forwardPorts": [80,443,8080],
+     "portsAttributes": {
+        "8080": {
+            "label": "server-8080",
+            "onAutoForward": "notify"
+        }
+    }
+}
